@@ -58,9 +58,6 @@ scripts/                     Stdlib-only Python (no pip installs)
   backup.py                    Dump any endpoint → timestamped JSON
   batch_runner.py              Non-destructive batch template (backup→canary→batch→summary)
   verify_redirects.py          Two-hop live redirect verifier
-.claude-plugin/              Claude Code plugin packaging
-  plugin.json                  Plugin manifest (enables marketplace install)
-  marketplace.json             Marketplace catalog (enables /plugin marketplace add)
 install.sh                   One-command installer (clone → .env → validate)
 .env.example                 Copy to .env and add your key
 ```
@@ -121,102 +118,64 @@ files.ui_hidden.read   # only if you read system / hidden files (optional)
 
 ## Install (Claude Code)
 
-Three ways — all end up giving you the **`/hubspot-companion`** command. The repo ships an
-`install.sh` script, a plugin manifest (`.claude-plugin/plugin.json`), and a marketplace
-(`.claude-plugin/marketplace.json`), with a `SKILL.md` at its root — so it works as a one-command
-script, a `/plugin` install, *or* a plain skill folder.
+It's a **plain skill** — a folder named `hubspot-companion/` with `SKILL.md` at its root, dropped
+into a Claude Code skills directory. The folder name becomes the command: **`/hubspot-companion`**.
 
-### Method 1 — Install script (simplest, recommended)
+### Easiest — one command
 
-One command does everything (clone into `~/.claude/skills/`, create `.env`, prompt for your key,
-validate it):
 ```bash
 curl -fsSL https://raw.githubusercontent.com/GustavoGomezPG/hubspot-companion-skill/main/install.sh | bash
 ```
-Prefer not to pipe to bash, or want it in a project instead? Clone and run the script with a target:
+Clones into `~/.claude/skills/hubspot-companion`, creates `.env`, prompts for your Service Key, and
+validates it. **Then restart Claude Code and type `/hubspot-companion`.**
+
+Rather not pipe to bash (or want it in one project)? Clone and run the script:
 ```bash
-git clone git@github.com:GustavoGomezPG/hubspot-companion-skill.git
+git clone https://github.com/GustavoGomezPG/hubspot-companion-skill.git
 ./hubspot-companion-skill/install.sh                                   # → ~/.claude/skills/hubspot-companion
-# or a project:  ./hubspot-companion-skill/install.sh /path/to/project/.claude/skills/hubspot-companion
+# project-only:  ./hubspot-companion-skill/install.sh /path/to/project/.claude/skills/hubspot-companion
 ```
-Already have your key exported? `HUBSPOT_SERVICE_KEY=... ` in your env is picked up automatically.
-Re-running the script updates an existing install (it `git pull`s and leaves your `.env` alone).
 
-### Method 2 — Plugin via marketplace
+### Manual (no script)
 
-From inside Claude Code:
-```
-/plugin marketplace add GustavoGomezPG/hubspot-companion-skill
-/plugin install hubspot-companion@hubspot-companion-skill
-```
-The first command registers the marketplace from the GitHub repo; the second installs the
-plugin. Then invoke it with **`/hubspot-companion`** (or just ask Claude to do HubSpot work).
-You can also run `/plugin` to browse/install/manage from the UI.
-
-> **Where does the key go for a plugin install?** A plugin is copied into Claude Code's cache,
-> so you don't edit a `.env` inside it. Instead the scripts read the key from your **current
-> working directory** — put a `.env` (with `HUBSPOT_SERVICE_KEY=...`) in your project folder, or
-> `export HUBSPOT_SERVICE_KEY=...` in your shell. (`hs_client.py` searches: CWD → skill root → env.)
-
-### Method 3 — Skill folder (manual git clone)
-
-A skill is a folder named `<skill-name>/` with `SKILL.md` at its root, under a skills directory;
-the folder name becomes the command. Clone into a folder named **`hubspot-companion`**:
-
-**Personal (all projects):**
 ```bash
-git clone git@github.com:GustavoGomezPG/hubspot-companion-skill.git ~/.claude/skills/hubspot-companion
+git clone https://github.com/GustavoGomezPG/hubspot-companion-skill.git ~/.claude/skills/hubspot-companion
 cd ~/.claude/skills/hubspot-companion
-cp .env.example .env            # then edit .env and paste your HUBSPOT_SERVICE_KEY
+cp .env.example .env            # paste your key into .env
 python3 scripts/hs_client.py validate
 ```
-(HTTPS instead of SSH: `https://github.com/GustavoGomezPG/hubspot-companion-skill.git`.)
+For one project only, clone into `<project>/.claude/skills/hubspot-companion` instead.
 
-**Project (this repo only):** clone into `/path/to/project/.claude/skills/hubspot-companion`.
+### Make it show up
 
-> Because the repo also contains `.claude-plugin/plugin.json`, a clone into a skills directory is
-> picked up as a local plugin (`hubspot-companion@skills-dir`) on the **next session**, so
-> **restart Claude Code once** after cloning. (A skill folder *without* a plugin manifest would be
-> live-watched with no restart — see the [docs](https://code.claude.com/docs/en/skills).)
-
-**Verify (either method):** type `/` and confirm `hubspot-companion` appears, or run `/hubspot-companion`.
+- **Restart Claude Code** if `~/.claude/skills/` was just created — Claude Code only starts watching
+  a brand-new skills directory on restart. If that directory already existed, the skill is live
+  immediately (no restart).
+- Verify: type `/` and confirm **`hubspot-companion`** is listed, or just run `/hubspot-companion`.
 
 ## Configure
 
 ```bash
 cp .env.example .env
-# .env:
-#   HUBSPOT_SERVICE_KEY=your-service-key-here
+# .env:  HUBSPOT_SERVICE_KEY=your-service-key-here
 ```
-The `.env` is **gitignored** — it holds a live credential, never commit it. For a plugin install,
-put the `.env` in your working folder (or export `HUBSPOT_SERVICE_KEY`). For a second portal, pass
-`--token <key>` on any script.
+The install script does this for you. The `.env` is **gitignored** — never commit it. The scripts
+also accept `HUBSPOT_SERVICE_KEY` from your shell env, or `--token <key>` for a second portal.
 
 ## Update
 
-**Plugin:**
-```
-/plugin marketplace update hubspot-companion-skill
-```
-(The manifest omits a fixed `version`, so it tracks the latest commit — every push is an update.)
-
-**Skill folder:**
 ```bash
-git -C ~/.claude/skills/hubspot-companion pull
+git -C ~/.claude/skills/hubspot-companion pull        # or just re-run install.sh
 ```
-`SKILL.md`/reference edits take effect in-session. Your `.env`, `backups/`, `batch-logs/` are
-untracked, so neither update touches them.
+Edits take effect in-session. Your `.env`, `backups/`, and `batch-logs/` are untracked, so an
+update never touches them.
 
 ## Uninstall
 
-**Plugin:** `/plugin uninstall hubspot-companion@hubspot-companion-skill` (or remove it from the
-`/plugin` UI). To also drop the marketplace: `/plugin marketplace remove hubspot-companion-skill`.
-
-**Skill folder:**
 ```bash
 rm -rf ~/.claude/skills/hubspot-companion
 ```
-Nothing is installed system-wide; removing the plugin/folder is the complete uninstall.
+That's the whole uninstall — nothing is installed system-wide.
 
 ## Use as a plain toolkit (no Claude Code)
 

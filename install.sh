@@ -59,9 +59,11 @@ fi
 
 cat <<EOF
 
-==> Done.
-    1. If ~/.claude/skills didn't exist before, restart Claude Code once.
-    2. Run  /hubspot-companion  (or just ask Claude to do HubSpot work).
+==> Installed as a plain skill at: $DEST
+
+    NEXT: restart Claude Code, then type  /hubspot-companion
+    (Claude Code only picks up a brand-new skills directory on restart. If ~/.claude/skills
+     already existed, the skill is live now — no restart needed.)
 
     Need a key? HubSpot > Settings > Account Management > Integrations > Service Keys
     > Create service key > add scopes:  content  hubdb  files  > copy it into $DEST/.env
