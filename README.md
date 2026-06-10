@@ -12,6 +12,35 @@ READ → BACKUP (JSON) → CANARY (test-on-one, verified) → CONFIRM → BATCH 
 in-flight progress, per-item log) → SUMMARIZE + re-verify
 ```
 
+## Capabilities
+
+- **Audit & extract** — list domains, pages, posts, redirects, HubDB rows; export to JSON/CSV.
+- **URL redirect management** — create, fix, and verify redirects; catch-alls, patterns, bulk strategy.
+- **Domain verification & cutover** — check connection / SSL / DNS / serving; diagnose primary-domain effects.
+- **Page & blog post transfer** — move pages and posts between portals, with source + target backups.
+- **Media transfer & optimization** — migrate File Manager assets (idempotent); compress/resize before upload.
+- **HubDB** — read/write tables, rows, and columns safely (avoids the row-wipe trap).
+- **Content editing & URL overwrites** — patch page/post bodies; rewrite links, media, and host inside content.
+- **Deduplication** — find and archive duplicate page / post copies.
+- **Content Staging transfer** — publish staged content live; clear obsolete staged pages.
+- **Design Manager / templates** — read, create, update, delete templates, modules, CSS, JS (Source Code API).
+- **Bulk rollback / disaster recovery** — scripted, reversible "undo" of an import.
+
+Everything runs through the same non-destructive flow: **backup → canary → batch → verify**.
+
+## Quick start (the easy path)
+
+1. **Create a HubSpot Service Key** — Settings ▸ Account Management ▸ Integrations ▸ Service Keys ▸
+   **Create service key** ▸ add scopes **`content`**, **`hubdb`**, **`files`** ▸ copy the key.
+   (Detailed walkthrough in [Getting a HubSpot Service Key](#getting-a-hubspot-service-key).)
+2. **Install** — one command. It clones into `~/.claude/skills/`, sets up your key, and validates it:
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/GustavoGomezPG/hubspot-companion-skill/main/install.sh | bash
+   ```
+   Paste your key when prompted. *(Rather not pipe to bash? `git clone` and run `./install.sh` — see [Install](#install-claude-code).)*
+3. **Use it** — restart Claude Code if `~/.claude/skills` was just created, then run **`/hubspot-companion`**
+   (or just ask Claude to do HubSpot work).
+
 ## What's inside
 
 ```
@@ -32,6 +61,7 @@ scripts/                     Stdlib-only Python (no pip installs)
 .claude-plugin/              Claude Code plugin packaging
   plugin.json                  Plugin manifest (enables marketplace install)
   marketplace.json             Marketplace catalog (enables /plugin marketplace add)
+install.sh                   One-command installer (clone → .env → validate)
 .env.example                 Copy to .env and add your key
 ```
 
@@ -91,11 +121,28 @@ files.ui_hidden.read   # only if you read system / hidden files (optional)
 
 ## Install (Claude Code)
 
-Two ways — both end up giving you the **`/hubspot-companion`** command. The repo ships a plugin
-manifest (`.claude-plugin/plugin.json`) and a marketplace (`.claude-plugin/marketplace.json`),
-and a `SKILL.md` at its root, so it works as a one-command plugin *and* as a plain skill folder.
+Three ways — all end up giving you the **`/hubspot-companion`** command. The repo ships an
+`install.sh` script, a plugin manifest (`.claude-plugin/plugin.json`), and a marketplace
+(`.claude-plugin/marketplace.json`), with a `SKILL.md` at its root — so it works as a one-command
+script, a `/plugin` install, *or* a plain skill folder.
 
-### Method 1 — Plugin via marketplace (one-command install, recommended)
+### Method 1 — Install script (simplest, recommended)
+
+One command does everything (clone into `~/.claude/skills/`, create `.env`, prompt for your key,
+validate it):
+```bash
+curl -fsSL https://raw.githubusercontent.com/GustavoGomezPG/hubspot-companion-skill/main/install.sh | bash
+```
+Prefer not to pipe to bash, or want it in a project instead? Clone and run the script with a target:
+```bash
+git clone git@github.com:GustavoGomezPG/hubspot-companion-skill.git
+./hubspot-companion-skill/install.sh                                   # → ~/.claude/skills/hubspot-companion
+# or a project:  ./hubspot-companion-skill/install.sh /path/to/project/.claude/skills/hubspot-companion
+```
+Already have your key exported? `HUBSPOT_SERVICE_KEY=... ` in your env is picked up automatically.
+Re-running the script updates an existing install (it `git pull`s and leaves your `.env` alone).
+
+### Method 2 — Plugin via marketplace
 
 From inside Claude Code:
 ```
@@ -111,7 +158,7 @@ You can also run `/plugin` to browse/install/manage from the UI.
 > working directory** — put a `.env` (with `HUBSPOT_SERVICE_KEY=...`) in your project folder, or
 > `export HUBSPOT_SERVICE_KEY=...` in your shell. (`hs_client.py` searches: CWD → skill root → env.)
 
-### Method 2 — Skill folder (git clone)
+### Method 3 — Skill folder (manual git clone)
 
 A skill is a folder named `<skill-name>/` with `SKILL.md` at its root, under a skills directory;
 the folder name becomes the command. Clone into a folder named **`hubspot-companion`**:
