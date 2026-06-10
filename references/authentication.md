@@ -5,6 +5,11 @@
 HubSpot **Service Keys** are a beta credential type obtained from:
 `Settings > Account Management > Keys > Service Keys`.
 
+- **How to create one** (step-by-step with scopes is in `README.md`): HubSpot → Settings →
+  Account Management → Integrations → Service Keys (or Development → Keys → Service keys) →
+  Create service key → name it → Add new scope → Update → copy the key. Requires the
+  "Developer tools access" permission. Public beta since Feb 2026; a Private App token is a
+  working fallback if it's not enabled.
 - Sent as a bearer token: `Authorization: Bearer <key>`.
 - **Validate** and discover the portal id with:
   `GET /account-info/v3/details` → `{ "portalId": 489415, ... }`.

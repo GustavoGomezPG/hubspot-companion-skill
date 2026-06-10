@@ -28,8 +28,12 @@ backup and a single-item canary first.
 
 ## Setup — get the key, configure .env, validate (do this first)
 
-1. **Get a Service Key.** HubSpot **Service Keys** (beta), NOT Private App tokens:
-   `Settings > Account Management > Keys > Service Keys`.
+1. **Get a Service Key.** HubSpot **Service Keys** (public beta), the recommended credential.
+   In HubSpot: **Settings → Account Management → Integrations → Service Keys** (or Development →
+   **Keys → Service keys**) → **Create service key** → name it → **Add new scope** (pick the
+   scopes below) → **Update** → copy the key. Requires the "Developer tools access" permission.
+   (A Private App access token also works as a fallback if Service Keys aren't enabled.)
+   Full step-by-step in `README.md`.
 2. **Put it in a `.env` file** in the skill folder (or your working dir):
    ```
    cp .env.example .env
