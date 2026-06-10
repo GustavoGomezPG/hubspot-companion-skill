@@ -1,0 +1,13 @@
+{
+  "name": "hubspot-companion-skill",
+  "owner": {
+    "name": "Gustavo Gomez"
+  },
+  "plugins": [
+    {
+      "name": "hubspot-companion",
+      "source": "./",
+      "description": "HubSpot account-management skill: rate-limited API client, non-destructive backup -> canary -> batch workflow, two-hop redirect verifier, and reference docs (auth, endpoints, url-redirects, hubdb, domains/migrations). Key via .env or HUBSPOT_SERVICE_KEY."
+    }
+  ]
+}

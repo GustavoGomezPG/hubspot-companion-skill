@@ -1,0 +1,9 @@
+{
+  "name": "hubspot-companion",
+  "description": "Operate on a HubSpot portal safely via its API — audit and extract content, fix and create URL redirects, migrate pages, blog posts, and media between portals or domains, edit content, and run HubDB operations. Always uses a non-destructive backup -> single-item canary -> full-batch workflow with in-flight progress checks.",
+  "author": {
+    "name": "Gustavo Gomez"
+  },
+  "homepage": "https://github.com/GustavoGomezPG/hubspot-companion-skill",
+  "keywords": ["hubspot", "cms", "url-redirects", "hubdb", "migration", "service-key", "domains"]
+}

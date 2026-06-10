@@ -28,6 +28,9 @@ scripts/                     Stdlib-only Python (no pip installs)
   backup.py                    Dump any endpoint → timestamped JSON
   batch_runner.py              Non-destructive batch template (backup→canary→batch→summary)
   verify_redirects.py          Two-hop live redirect verifier
+.claude-plugin/              Claude Code plugin packaging
+  plugin.json                  Plugin manifest (enables marketplace install)
+  marketplace.json             Marketplace catalog (enables /plugin marketplace add)
 .env.example                 Copy to .env and add your key
 ```
 
@@ -64,11 +67,32 @@ Admins have it; otherwise ask an admin to grant it or to create the key for you.
 
 ## Install (Claude Code)
 
-In Claude Code a skill is a folder named `<skill-name>/` containing `SKILL.md`, placed under a
-skills directory. The folder name becomes the slash command — so clone this repo into a folder
-named **`hubspot-companion`** and you invoke it with **`/hubspot-companion`**.
+Two ways — both end up giving you the **`/hubspot-companion`** command. The repo ships a plugin
+manifest (`.claude-plugin/plugin.json`) and a marketplace (`.claude-plugin/marketplace.json`),
+and a `SKILL.md` at its root, so it works as a one-command plugin *and* as a plain skill folder.
 
-**Personal — available in every project (recommended):**
+### Method 1 — Plugin via marketplace (one-command install, recommended)
+
+From inside Claude Code:
+```
+/plugin marketplace add GustavoGomezPG/hubspot-companion-skill
+/plugin install hubspot-companion@hubspot-companion-skill
+```
+The first command registers the marketplace from the GitHub repo; the second installs the
+plugin. Then invoke it with **`/hubspot-companion`** (or just ask Claude to do HubSpot work).
+You can also run `/plugin` to browse/install/manage from the UI.
+
+> **Where does the key go for a plugin install?** A plugin is copied into Claude Code's cache,
+> so you don't edit a `.env` inside it. Instead the scripts read the key from your **current
+> working directory** — put a `.env` (with `HUBSPOT_SERVICE_KEY=...`) in your project folder, or
+> `export HUBSPOT_SERVICE_KEY=...` in your shell. (`hs_client.py` searches: CWD → skill root → env.)
+
+### Method 2 — Skill folder (git clone)
+
+A skill is a folder named `<skill-name>/` with `SKILL.md` at its root, under a skills directory;
+the folder name becomes the command. Clone into a folder named **`hubspot-companion`**:
+
+**Personal (all projects):**
 ```bash
 git clone git@github.com:GustavoGomezPG/hubspot-companion-skill.git ~/.claude/skills/hubspot-companion
 cd ~/.claude/skills/hubspot-companion
@@ -77,21 +101,14 @@ python3 scripts/hs_client.py validate
 ```
 (HTTPS instead of SSH: `https://github.com/GustavoGomezPG/hubspot-companion-skill.git`.)
 
-**Project — this repository only (commit it with the project):**
-```bash
-git clone git@github.com:GustavoGomezPG/hubspot-companion-skill.git \
-  /path/to/your/project/.claude/skills/hubspot-companion
-```
+**Project (this repo only):** clone into `/path/to/project/.claude/skills/hubspot-companion`.
 
-**Activation:** Claude Code live-watches the skills directories, so the skill is usable
-**immediately in your running session** — type `/hubspot-companion`, or just ask Claude to do
-HubSpot work and it loads the skill automatically (from the `description`). One caveat from the
-[docs](https://code.claude.com/docs/en/skills): if the `~/.claude/skills/` (or `.claude/skills/`)
-directory **did not exist** when you started Claude Code, restart it once so the new directory
-gets watched.
+> Because the repo also contains `.claude-plugin/plugin.json`, a clone into a skills directory is
+> picked up as a local plugin (`hubspot-companion@skills-dir`) on the **next session**, so
+> **restart Claude Code once** after cloning. (A skill folder *without* a plugin manifest would be
+> live-watched with no restart — see the [docs](https://code.claude.com/docs/en/skills).)
 
-**Verify it loaded:** type `/` and confirm `hubspot-companion` appears in the list, or run
-`/hubspot-companion`.
+**Verify (either method):** type `/` and confirm `hubspot-companion` appears, or run `/hubspot-companion`.
 
 ## Configure
 
@@ -100,26 +117,35 @@ cp .env.example .env
 # .env:
 #   HUBSPOT_SERVICE_KEY=your-service-key-here
 ```
-The `.env` is **gitignored** — it holds a live credential, never commit it. For a second
-portal, pass `--token <key>` on any script, or keep a separate `.env`.
+The `.env` is **gitignored** — it holds a live credential, never commit it. For a plugin install,
+put the `.env` in your working folder (or export `HUBSPOT_SERVICE_KEY`). For a second portal, pass
+`--token <key>` on any script.
 
 ## Update
 
-```bash
-git -C ~/.claude/skills/hubspot-companion pull        # personal install
-# or:  git -C /path/to/project/.claude/skills/hubspot-companion pull
+**Plugin:**
 ```
-`SKILL.md` / reference edits take effect within the running session (Claude Code re-reads on
-change). Your `.env`, `backups/`, and `batch-logs/` are untracked, so a pull never touches them.
+/plugin marketplace update hubspot-companion-skill
+```
+(The manifest omits a fixed `version`, so it tracks the latest commit — every push is an update.)
+
+**Skill folder:**
+```bash
+git -C ~/.claude/skills/hubspot-companion pull
+```
+`SKILL.md`/reference edits take effect in-session. Your `.env`, `backups/`, `batch-logs/` are
+untracked, so neither update touches them.
 
 ## Uninstall
 
+**Plugin:** `/plugin uninstall hubspot-companion@hubspot-companion-skill` (or remove it from the
+`/plugin` UI). To also drop the marketplace: `/plugin marketplace remove hubspot-companion-skill`.
+
+**Skill folder:**
 ```bash
-rm -rf ~/.claude/skills/hubspot-companion              # personal
-# or:  rm -rf /path/to/project/.claude/skills/hubspot-companion
+rm -rf ~/.claude/skills/hubspot-companion
 ```
-Removal takes effect within the session — `/hubspot-companion` disappears from the menu.
-Nothing is installed system-wide; deleting the folder is the complete uninstall.
+Nothing is installed system-wide; removing the plugin/folder is the complete uninstall.
 
 ## Use as a plain toolkit (no Claude Code)
 
