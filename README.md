@@ -51,15 +51,28 @@ Admins have it; otherwise ask an admin to grant it or to create the key for you.
    *(or, under Development, **Keys → Service keys**)*.
 3. Click **Create service key** (top right).
 4. Give it a **name** (e.g. `hubspot-companion`).
-5. Click **Add new scope** and select the scopes this skill needs:
-   `content`, `hubdb`, `files`, `files.ui_hidden.read` *(add any others your task needs,
-   e.g. CRM scopes)*. Click **Update**.
+5. Click **Add new scope** and add **each** of the scopes in the table below (use the search box
+   in the scope picker to find each one by name), then click **Update**.
 6. Create/save the key, then **copy the generated key value**.
 7. Paste it into your `.env`:
    ```
    HUBSPOT_SERVICE_KEY=your-copied-key-here
    ```
 8. Verify it: `python3 scripts/hs_client.py validate` → should print your portal id.
+
+### Scopes to add (all four)
+
+| Scope | Enables |
+|-------|---------|
+| **`content`** | CMS pages (website + landing), blog posts/tags/settings, **URL redirects**, and domain reads — the bulk of the skill |
+| **`hubdb`** | HubDB tables, rows, and columns |
+| **`files`** | File Manager — read/write media (needed for media migrations) |
+| **`files.ui_hidden.read`** | Access to system / hidden files |
+
+All four are required for full functionality. The picker may group them under **CMS**, **HubDB**,
+and **Files** categories — search each identifier (`content`, `hubdb`, `files`,
+`files.ui_hidden.read`) to find it. If a later call returns `403`, you're missing one of these.
+Add any extra scopes only if you extend the skill (e.g. `crm.objects.*` for CRM data).
 
 > Don't see Service Keys? The account may not have the beta enabled yet. As a fallback you
 > can use a **Private App access token** (HubSpot → Settings → Integrations → Private Apps),
