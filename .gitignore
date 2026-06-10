@@ -1,0 +1,9 @@
+# NEVER commit the live credential
+.env
+
+# generated at runtime by the skill
+scripts/__pycache__/
+__pycache__/
+backups/
+batch-logs/
+*.verify.csv
