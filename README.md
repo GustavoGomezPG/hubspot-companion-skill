@@ -62,35 +62,36 @@ Admins have it; otherwise ask an admin to grant it or to create the key for you.
 > can use a **Private App access token** (HubSpot → Settings → Integrations → Private Apps),
 > which is also a Bearer token and works with every script here — put it in `.env` the same way.
 
-## Install
+## Install (Claude Code)
 
-A skill is just a folder. Put it where your agent looks for skills, then add your key.
+In Claude Code a skill is a folder named `<skill-name>/` containing `SKILL.md`, placed under a
+skills directory. The folder name becomes the slash command — so clone this repo into a folder
+named **`hubspot-companion`** and you invoke it with **`/hubspot-companion`**.
 
-**Option A — personal (available in every project):**
+**Personal — available in every project (recommended):**
 ```bash
-git clone <THIS_REPO_URL> ~/.claude/skills/hubspot-companion
+git clone git@github.com:GustavoGomezPG/hubspot-companion-skill.git ~/.claude/skills/hubspot-companion
 cd ~/.claude/skills/hubspot-companion
-cp .env.example .env        # then edit .env and paste your HUBSPOT_SERVICE_KEY
+cp .env.example .env            # then edit .env and paste your HUBSPOT_SERVICE_KEY
 python3 scripts/hs_client.py validate
 ```
+(HTTPS instead of SSH: `https://github.com/GustavoGomezPG/hubspot-companion-skill.git`.)
 
-**Option B — single project only:**
+**Project — this repository only (commit it with the project):**
 ```bash
-git clone <THIS_REPO_URL> /path/to/your/project/.claude/skills/hubspot-companion
-cd /path/to/your/project/.claude/skills/hubspot-companion
-cp .env.example .env        # then edit .env
-python3 scripts/hs_client.py validate
+git clone git@github.com:GustavoGomezPG/hubspot-companion-skill.git \
+  /path/to/your/project/.claude/skills/hubspot-companion
 ```
 
-**Option C — standalone toolkit (no agent integration):** clone anywhere, set up `.env`,
-and run the scripts directly. The references double as documentation.
+**Activation:** Claude Code live-watches the skills directories, so the skill is usable
+**immediately in your running session** — type `/hubspot-companion`, or just ask Claude to do
+HubSpot work and it loads the skill automatically (from the `description`). One caveat from the
+[docs](https://code.claude.com/docs/en/skills): if the `~/.claude/skills/` (or `.claude/skills/`)
+directory **did not exist** when you started Claude Code, restart it once so the new directory
+gets watched.
 
-After install, invoking the skill (e.g. `/hubspot-companion` in Claude Code, if your client
-lists it) loads `SKILL.md`; the agent reads the relevant `references/*.md` on demand.
-
-> Skill auto-discovery location depends on your client. Claude Code reads `~/.claude/skills/`
-> (personal) and `<project>/.claude/skills/` (project). If your client uses a different path,
-> clone or symlink the folder there.
+**Verify it loaded:** type `/` and confirm `hubspot-companion` appears in the list, or run
+`/hubspot-companion`.
 
 ## Configure
 
@@ -105,17 +106,25 @@ portal, pass `--token <key>` on any script, or keep a separate `.env`.
 ## Update
 
 ```bash
-cd <install-dir>/hubspot-companion
-git pull
+git -C ~/.claude/skills/hubspot-companion pull        # personal install
+# or:  git -C /path/to/project/.claude/skills/hubspot-companion pull
 ```
-Your `.env` and any local `backups/` / `batch-logs/` are untracked, so a pull won't touch them.
+`SKILL.md` / reference edits take effect within the running session (Claude Code re-reads on
+change). Your `.env`, `backups/`, and `batch-logs/` are untracked, so a pull never touches them.
 
 ## Uninstall
 
 ```bash
-rm -rf <install-dir>/hubspot-companion
+rm -rf ~/.claude/skills/hubspot-companion              # personal
+# or:  rm -rf /path/to/project/.claude/skills/hubspot-companion
 ```
-(e.g. `rm -rf ~/.claude/skills/hubspot-companion`). That's it — nothing is installed system-wide.
+Removal takes effect within the session — `/hubspot-companion` disappears from the menu.
+Nothing is installed system-wide; deleting the folder is the complete uninstall.
+
+## Use as a plain toolkit (no Claude Code)
+
+Clone anywhere, set up `.env`, and run the `scripts/` directly — the `references/*.md` double
+as standalone documentation.
 
 ## Quick check
 
