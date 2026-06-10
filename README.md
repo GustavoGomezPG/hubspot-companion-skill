@@ -60,19 +60,24 @@ Admins have it; otherwise ask an admin to grant it or to create the key for you.
    ```
 8. Verify it: `python3 scripts/hs_client.py validate` → should print your portal id.
 
-### Scopes to add (all four)
+### Scopes to add
 
-| Scope | Enables |
-|-------|---------|
-| **`content`** | CMS pages (website + landing), blog posts/tags/settings, **URL redirects**, and domain reads — the bulk of the skill |
-| **`hubdb`** | HubDB tables, rows, and columns |
-| **`files`** | File Manager — read/write media (needed for media migrations) |
-| **`files.ui_hidden.read`** | Access to system / hidden files |
+In the key's scope picker, use the **"Find a scope"** search box and add each identifier below.
+These are broad scopes (HubSpot lists them under "requires **one of** the following scopes"), so
+this short list covers every API the skill uses — **verified against HubSpot's live API reference**:
 
-All four are required for full functionality. The picker may group them under **CMS**, **HubDB**,
-and **Files** categories — search each identifier (`content`, `hubdb`, `files`,
-`files.ui_hidden.read`) to find it. If a later call returns `403`, you're missing one of these.
-Add any extra scopes only if you extend the skill (e.g. `crm.objects.*` for CRM data).
+```
+content                # URL redirects, website + landing pages, blog posts/tags, blog settings, domain reads
+hubdb                  # HubDB tables, rows, and columns
+files                  # File Manager — read/write media (migrations)
+files.ui_hidden.read   # only if you read system / hidden files (optional)
+```
+
+- **`content`** is the single scope HubSpot requires for URL redirects, pages, blog, *and* domain
+  reads (confirmed on each endpoint's "Scope requirements"). You do **not** need `cms.domains.read`.
+- **`hubdb`** covers all HubDB operations; **`files`** covers File Manager media.
+- A `403` on a call means you're missing that area's scope — add it and retry.
+- Add extra scopes only if you extend the skill (e.g. `crm.objects.*` for CRM data).
 
 > Don't see Service Keys? The account may not have the beta enabled yet. As a fallback you
 > can use a **Private App access token** (HubSpot → Settings → Integrations → Private Apps),
