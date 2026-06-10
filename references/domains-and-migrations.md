@@ -47,12 +47,34 @@ Two-phase, non-destructive: **Export** (source → local JSON, never touches tar
   media; rewrite URLs + ids; create as **DRAFT** preserving publish dates. Idempotency = skip
   posts whose slug already exists in target. Scan HTML for portal-specific breakage before import:
   HubL `{% %}`/`{{ }}` tokens, `hbspt.forms.create` form embeds, CTA GUIDs, media that 404s.
+  Cross-portal gotchas (hard-won):
+  - **Tag IDs must be normalized to STRINGS** when mapping source→target tags. A numeric/string
+    mismatch makes the lookup silently miss, and the post imports with **all tags dropped**.
+  - **Re-sync tags by name** in the target *after* import (recompute each post's tags by matching
+    tag names in the target) — a cheap repair pass that fixes any that didn't map on first import.
+  - **Featured images:** set them explicitly via PATCH (`featuredImage` + `useFeaturedImage`,
+    and `featuredImageAltText`); they don't carry over just by copying body HTML.
+  - **Media URLs:** rewrite to the uploaded file's **absolute** URL (e.g.
+    `https://<portal>.fs1.hubspotusercontent-...`), NOT a relative `/hubfs/...` path — relative
+    paths break ("Cannot parse path"). Store the absolute URL in your old→new catalog.
 - **Pages:** recreate title, featured image, body HTML, slug, publish date, meta on a target
   template; upload + rewrite media. Watch for theme/global-group dependencies that only exist in
   the source portal (a copied auto-generated layout won't render if its theme/header/footer ids
   are portal-specific) — normalize onto a clean target template instead of porting the legacy theme.
+- **Pre-import media optimization (optional):** HubSpot storage is capped (250 MB free → 5 GB
+  enterprise). For large image sets, compress/resize before upload (e.g. ~1600px wide, mozjpeg
+  q80 — often a 10×+ reduction) using external image tooling. Always back up the originals first
+  and keep a map so the step is reversible.
 - **Always offer a CSV fallback** for imports (HubSpot's CSV import tool) and a **dry-run** that
   logs what would happen without writing.
+
+## Bulk reversal / disaster recovery (the "undo" beyond backups)
+For a large import, also build the reverse operation up front — a scripted, **reversible** bulk
+state change that takes the imported content back to a safe state (e.g. set all imported posts/pages
+to **draft / offline**, or archive them). This is the fast rollback if an import looks wrong in
+production. It pairs with the JSON backup: the backup restores *exact* prior state; the reversal
+gets you out of "live and wrong" immediately. Make it idempotent and scope it strictly to the items
+you imported (track their ids), never the target's pre-existing content.
 
 ## Redirects as the migration tail
 After pages/posts move, generate redirects old-URL → new-URL. Mind structure differences

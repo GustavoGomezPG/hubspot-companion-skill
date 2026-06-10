@@ -21,10 +21,17 @@ backup and a single-item canary first.
 ## When to use
 
 - Audit / extract: list domains, pages, posts, redirects, HubDB rows; export to JSON/CSV.
-- Fix: repair redirects, patch content, correct HubDB rows, resolve domain serving issues.
-- Migrate: pages, blog posts, media, HubDB tables between portals or onto new domains.
-- Domain work: connect/cutover analysis, primary-domain effects, redirect strategy.
+- Fix / update: CMS content updates — patch pages/posts, correct HubDB rows, edit meta/slug.
+- Migrate (with backup): transfer pages, blog posts, media, HubDB tables, and **staging content**
+  between portals or onto new domains — backing up source + target each step.
+- Content URL overwrites: rewrite links/media/host embedded inside page & post bodies.
+- Deduplication: detect and delete/archive duplicate page & post copies.
+- Templates / Design Manager: read, create, update, delete templates, modules, CSS, JS (CRUD).
+- Domain work: verification (connection/SSL/DNS/serving), cutover analysis, primary-domain effects.
+- Redirection management: create/fix/verify redirects, catch-alls, bulk strategy.
 - Bulk edits: any change touching more than one record.
+- Roll back: scripted, reversible bulk reversal of an import (e.g. revert imported content to
+  draft/offline) as a fast "undo" alongside the JSON backups.
 
 ## Setup — get the key, configure .env, validate (do this first)
 
@@ -91,7 +98,8 @@ auto-retry, and token handling.
 | Endpoint catalog + payload shapes | `references/endpoints.md` |
 | URL redirects (patterns, precedence, catch-alls, verification) | `references/url-redirects.md` |
 | HubDB tables/rows/columns (incl. the row-wipe trap) | `references/hubdb.md` |
-| Domains, primary-domain effects, cutovers, migrations | `references/domains-and-migrations.md` |
+| Domains (verification + cutovers), primary-domain effects, migrations + backup | `references/domains-and-migrations.md` |
+| Content ops: edit pages/posts, URL overwrites, dedupe copies, staging transfer, Design Manager template/module CRUD | `references/content-operations.md` |
 | Consolidated hard-won gotchas | `references/gotchas.md` |
 
 ## Scripts

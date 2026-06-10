@@ -85,3 +85,12 @@ before concluding a re-test failed — the API stored value is the source of tru
   already-present ones (idempotent re-runs).
 - Rate-limit ~0.11s between writes; retry 429/5xx.
 - Log every create/patch/delete with its result; print progress every ~200.
+
+## CSV import limits (the manual fallback path)
+HubSpot's **bulk URL-redirect CSV importer** (in the UI) is the manual fallback when you can't use
+the API. It has hard limits the API does NOT:
+- **≤ 500 rows per file** — split large sets into multiple ≤500-row files.
+- **≤ 140 characters per URL** — longer source/destination URLs are rejected.
+- Split per-domain (one set of files per source host) — each domain is managed separately.
+Prefer the **API** (this skill) for anything non-trivial — no row/length cap, idempotent, and
+verifiable. Generate CSVs only when handing off to someone using the HubSpot UI importer.

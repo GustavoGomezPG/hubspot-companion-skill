@@ -39,3 +39,14 @@
     rate-limit blips, not real failures.
 21. **CHECK THE DOCS FIRST.** Before reverse-engineering behavior with live trial-and-error,
     read `knowledge.hubspot.com` and the community — it saves hours (and cache-wait cycles).
+22. **CSV redirect import limits:** HubSpot's UI CSV importer caps at **500 rows/file** and
+    **140 chars/URL**; split large sets per-domain. The API (this skill) has no such cap.
+23. **Cross-portal blog tag IDs must be STRINGS** when mapping source→target, or the lookup misses
+    and the post imports with all tags dropped. Re-sync tags by NAME in the target after import.
+24. **Rewrite media to ABSOLUTE URLs** in migrated content (not relative `/hubfs/...`) or you get
+    "Cannot parse path" errors.
+25. **Content URL overwrites:** to change links/media/host inside page or post bodies, fetch the
+    body HTML, regex/replace, and PATCH it back — back up the original HTML first (idempotent: skip
+    if already rewritten).
+26. **Duplicate pages/posts:** dedupe by slug/path/title; keep the canonical and **archive** the
+    copies (reversible for pages). Confirm which is canonical before deleting.

@@ -21,7 +21,8 @@ references/                  On-demand deep dives
   endpoints.md                 Endpoint catalog + payload shapes
   url-redirects.md             Patterns, precedence, catch-alls, the apex↔www loop, verification
   hubdb.md                     Tables/rows/columns (incl. the row-wipe trap, FILE-object gotcha)
-  domains-and-migrations.md    Primary-domain effects, domain cutovers, content migration
+  domains-and-migrations.md    Domain verification + cutovers, primary-domain effects, page/post/media transfer + backup, rollback
+  content-operations.md        Edit pages/posts, content URL overwrites, dedupe copies, staging transfer, Design Manager template/module CRUD
   gotchas.md                   All the hard-won facts in one list
 scripts/                     Stdlib-only Python (no pip installs)
   hs_client.py                 Rate-limited client: get/post/patch/delete, paginate, validate
@@ -67,14 +68,19 @@ These are broad scopes (HubSpot lists them under "requires **one of** the follow
 this short list covers every API the skill uses — **verified against HubSpot's live API reference**:
 
 ```
-content                # URL redirects, website + landing pages, blog posts/tags, blog settings, domain reads
+content                # URL redirects · website + landing pages · blog posts/tags · blog settings ·
+                       #   domain reads · Design Manager templates/modules/source code · staging ·
+                       #   content edits & URL overwrites · duplicate deletion
 hubdb                  # HubDB tables, rows, and columns
-files                  # File Manager — read/write media (migrations)
+files                  # File Manager — read/write media (migrations, optimization)
 files.ui_hidden.read   # only if you read system / hidden files (optional)
 ```
 
-- **`content`** is the single scope HubSpot requires for URL redirects, pages, blog, *and* domain
-  reads (confirmed on each endpoint's "Scope requirements"). You do **not** need `cms.domains.read`.
+- **`content`** is the one scope HubSpot requires for nearly everything this skill does — URL
+  redirects, pages, blog, **Design Manager templates/modules (Source Code API)**, content updates,
+  staging transfers, deduplication, *and* domain reads. Verified on each endpoint's
+  "Scope requirements" (url-redirects, source-code, and domains all list `content`). You do **not**
+  need `cms.domains.read` or any `cms.source_code.*` scope.
 - **`hubdb`** covers all HubDB operations; **`files`** covers File Manager media.
 - A `403` on a call means you're missing that area's scope — add it and retry.
 - Add extra scopes only if you extend the skill (e.g. `crm.objects.*` for CRM data).
